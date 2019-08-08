@@ -22,12 +22,12 @@ Usage:
 
 Additional Info:
 In event pages, the links to each category has a set system, with event type followed by category.
-Individual qualification pages starts with IQ
-Individual brackets pages starts with IB
-Team qualification pages starts with TQ
-Team brackets pages starts with TB
+Individual qualification pages starts with IQ.
+Individual brackets pages starts with IB.
+Team qualification pages starts with TQ.
+Team brackets pages starts with TB.
 
-The above codes are followed by discipline, for example RM is Recurve Men, CW is Compound Women
+The above codes are followed by discipline, for example RM is Recurve Men, CW is Compound Women.
 
 Combining the above provides exact page names, eg: Recurve Men Qualification = IQRM.php
 Using this method the parser scans through the event page for all combinations possible to pick up every link for every category shot at the event.
@@ -38,10 +38,10 @@ Ianseo displays round and match info inside "Accordion" divs.
 
 Inside each accordion there is a HTML table with class "Griglia".
 
-If Qualification, the first row tells us the column labels depending on round  
-Subsequent rows in qualification pages each contains one competitor, sorted by rank, with all required info in named classes
+If Qualification, the first row tells us the column labels depending on round.  
+Subsequent rows in qualification pages each contains one competitor, sorted by rank, with all required info in named classes.
   
-If H2H, the first row tells us the title of each pass (eg. 1/32, 1/8, Finals etc)
+If H2H, the first row tells us the title of each pass (eg. 1/32, 1/8, Finals etc).
 The subsequent rows of H2H pages are a bit more complicated:  
  - Each row spans the entire page, encompassing every pass columns, so more than one competitor can appear in one row
   
