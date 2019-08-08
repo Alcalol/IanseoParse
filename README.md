@@ -1,6 +1,8 @@
 # IanseoParse
 A Parser to convert Ianseo events into CSV files
 
+Download pre-compiled executable here <a href="https://github.com/Alcalol/IanseoParse/releases">Releases</a>
+
 This parser can take any Ianseo event page (pages which has URL ending in toId?=xxxx),
 which contains all the qualification and H2H data and converts them into separate CSV files
 by categories.
