@@ -56,6 +56,15 @@ public class IanseoParse {
                 //Output path specified
                 outputPath = args[i + 1];
             }
+            else if(args[0].equals("-h")){
+                System.out.println("Available commands:");
+                System.out.println("-a <url> Provide a single address for parsing.");
+                System.out.println("-t <url> Provide a text file containing one event every line for parsing multiple events.");
+                System.out.println("-h <0 | 1 (default)> Specify if a header row is wanted in CSVs, on by default.");
+                System.out.println("-p Specify a path to save the event folder. (default is executable directory");
+                System.out.println(" ");
+                System.out.println("Either -a or -t must be provided, other parameters are optional");
+            }
         }
 
         if(!addressSet){
