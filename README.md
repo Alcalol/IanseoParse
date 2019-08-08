@@ -13,10 +13,10 @@ To run executable in cmd:
 java -jar IanseoParse.jar <parameters>
 
 Usage:
--a <url>              Provide a single address for parsing.
--t <text file>        Provide a text file containing one event every line for parsing multiple events.
--h <0 | 1 (default)>  Specify if a header row is wanted in CSVs, on by default.
--p <path>             Specify a path to save the event folder.
+<BR>-a <url>              Provide a single address for parsing.
+<BR>-t <text file>        Provide a text file containing one event every line for parsing multiple events.
+<BR>-h <0 | 1 (default)>  Specify if a header row is wanted in CSVs, on by default.
+<BR>-p <path>             Specify a path to save the event folder.
 
 
 
