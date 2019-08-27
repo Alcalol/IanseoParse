@@ -135,13 +135,23 @@ public class IanseoParse {
             if(k.contains("Qualification")){
                 //If the event is a qualification, call the appropriate processor
                 System.out.println(k);
-                ParseAndSaveQualification(fullPath, eventCode + "-" + k + ".csv", v, writeHeaders);
+                ParseAndSaveQualification(fullPath, eventCode + "-" + k + ".csv", v, writeHeaders, false);
+            }
+            //parse IF__.php page (final ranking page, has positions 1,2,3,4,5,6,7,8,9,9,9...etc)
+            if(k.contains("Final")) {
+                System.out.println(k);
+                //parse usingParseAndSaveQualification, boolean true indicate to not parse score
+                if(k.contains("Individual")){
+                    ParseAndSaveQualification(fullPath, eventCode + "-" + k + ".csv", v, writeHeaders, true);
+                }
+                else{
+                    //Team - To be implemented
+                }
             }
             else if (k.contains("Brackets")){
                 //If event is a brackets (H2H), call the appropriate processor
                 System.out.println(k);
                 if(k.contains("Individual")){
-
                     ParseAndSaveIndividualBrackets(fullPath, eventCode + "-" + k + ".csv", v, writeHeaders);
                 }
                 else{
@@ -162,7 +172,8 @@ public class IanseoParse {
 
         //Hashmap listing all possible rounds that are currently supported
         HashMap<String, String> output = new HashMap<>();
-        String[] disciplinesArray = {"IC.php", "IQRM.php", "IQRW.php", "IQCM.php", "IQCW.php", "IQBM.php", "IQBW.php", "IQLM.php", "LQLW.php", "IBRM.php", "IBRW.php", "IBCM.php", "IBCW.php", "IBBM.php", "IBBW.php", "IBLM.php", "IBLW.php", "TQRM.php", "TQRW.php", "TQCM.php", "TQCW.php", "TQBM.php", "TQBW.php", "TQLM.php", "TQLW.php", "TBRM.php", "TBRW.php", "TBCM.php", "TBCW.php", "TBBM.php", "TBBW.php", "TBLM.php", "TBLW.php"};
+        String[] disciplinesArray = {"IC.php", "IQRM.php", "IQRW.php", "IQCM.php", "IQCW.php", "IQBM.php", "IQBW.php", "IQLM.php", "LQLW.php", "IBRM.php", "IBRW.php", "IBCM.php", "IBCW.php", "IBBM.php", "IBBW.php", "IBLM.php", "IBLW.php", "TQRM.php", "TQRW.php", "TQCM.php", "TQCW.php", "TQBM.php", "TQBW.php", "TQLM.php", "TQLW.php", "TBRM.php", "TBRW.php", "TBCM.php", "TBCW.php", "TBBM.php", "TBBW.php", "TBLM.php", "TBLW.php",
+            "IFRM.php", "IFRW.php", "IFCM.php", "IFCW.php","IFBM.php", "IFBW.php", "IFLM.php", "IFLW.php"};
 
         try{
 
@@ -195,6 +206,9 @@ public class IanseoParse {
                     }
                     else if(linkPath.contains(("TB"))){
                         eventType = "Team_Brackets";
+                    }
+                    else if(linkPath.contains(("IF"))){
+                    	eventType = "Individual_Final";
                     }
                     else{
                         eventType = "Error";
@@ -253,7 +267,7 @@ public class IanseoParse {
         return null;
     }
 
-    public static void ParseAndSaveQualification(String filePath, String fileName, String url, boolean writeHeaders){
+    public static void ParseAndSaveQualification(String filePath, String fileName, String url, boolean writeHeaders, boolean isFinal){
         try{
             Document doc = Jsoup.connect(url).get();
 
@@ -261,7 +275,7 @@ public class IanseoParse {
             Element accordion = doc.getElementById("Accordion");
 
             //Processor is shared with Round only because format is the same
-            ProcessQualificationAccordion(filePath, fileName, accordion.getElementsByClass("accordion").first(),writeHeaders);
+            ProcessQualificationAccordion(filePath, fileName, accordion.getElementsByClass("accordion").first(),writeHeaders, isFinal);
 
         }
         catch (IOException ex){
@@ -292,7 +306,7 @@ public class IanseoParse {
                 fileName = eventCode + "-RoundOnly-" + innerAccordions.get(i).getElementsByClass("title").get(0).text().replace(" ", "").split("\\[")[0] + ".csv";
 
                 //Process current category and write to CSV
-                ProcessQualificationAccordion(filePath, fileName, innerAccordions.get(i), writeHeaders);
+                ProcessQualificationAccordion(filePath, fileName, innerAccordions.get(i), writeHeaders, false);
             }
         }
         catch(IOException e){
@@ -300,7 +314,7 @@ public class IanseoParse {
         }
     }
 
-    public static void ProcessQualificationAccordion(String filePath, String fileName, Element accordion, boolean writeHeaders){
+    public static void ProcessQualificationAccordion(String filePath, String fileName, Element accordion, boolean writeHeaders, boolean isFinal){
 
             //Inner accordion structure is the same for both Qualification AND Round Only types
 
@@ -310,24 +324,40 @@ public class IanseoParse {
 
             ArrayList<String[]> csvRows = new ArrayList<>();
 
+            //number of columns of the output csv
+            //final result print rank name country
+            //otherwise, also pirnt score, 10+X and X
+            int nColumn;
+            if (isFinal) {
+                nColumn = 3;
+            } else {
+                nColumn = 6;
+            }
+            //print header for csv
             if(writeHeaders){
-                String[] headers = {"Rank", "Name", "Country", "Score", "10 + X", "X Only"};
-
+                String[] headers = new String[nColumn];
+                headers[0] = "Rank";
+                headers[1] = "Name";
+                headers[2] = "Country";
+                if (!isFinal) {
+                    headers[3] = "Score";
+                    headers[4] = "10 + X";
+                    headers[5] = "X Only";
+                }
                 csvRows.add(headers);
             }
 
             for(int i = 1; i < competitors.size(); i++){
                 //Cycle through per class extracting wanted information
-
-                String rank = competitors.get(i).getElementsByClass("Rank").get(0).text();
-                String name = competitors.get(i).getElementsByClass("Athlete").get(0).text();
-                String country = competitors.get(i).getElementsByClass("CoCode").get(0).text();
-                String score = competitors.get(i).getElementsByClass("Score").get(0).text();
-                String golds = competitors.get(i).getElementsByClass("Golds").get(0).text();
-                String xCount = competitors.get(i).getElementsByClass("Golds").get(1).text();
-
-                String[] row = {rank, name, country, score, golds, xCount};
-
+                String [] row = new String[nColumn];
+                row[0] = competitors.get(i).getElementsByClass("Rank").get(0).text();
+                row[1] = competitors.get(i).getElementsByClass("Athlete").get(0).text();
+                row[2] = competitors.get(i).getElementsByClass("CoCode").get(0).text();
+                if (!isFinal) {
+	                row[3] = competitors.get(i).getElementsByClass("Score").get(0).text();
+	                row[4] = competitors.get(i).getElementsByClass("Golds").get(0).text();
+	                row[5] = competitors.get(i).getElementsByClass("Golds").get(1).text();
+                }
                 //Add collected row to list
                 csvRows.add(row);
             }
