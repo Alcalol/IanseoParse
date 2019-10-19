@@ -9,6 +9,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class IanseoParse {
 
@@ -110,28 +111,27 @@ public class IanseoParse {
         //Extract event code from event URL
         String eventCode = url.split("=")[1];
         System.out.println("Procesing event " + eventCode);
-
+        
+        //First check path is legit, if the path to save contains any type of slashes at the end, remove.
+        if(filePath.equals("")){
+            filePath = eventCode;
+        }
+        else if(filePath.lastIndexOf("/") == filePath.length() - 1 || filePath.lastIndexOf("\\") == filePath.length() - 1){
+            filePath =  filePath + eventCode;
+        }
+        else{
+            filePath = filePath + "/" + eventCode;
+        }
+        //This path is the raw save path only, does not include file name.
+        final String fullPath = filePath;
+        
         //Hashmap to store all qualification and bracket categories inside current event
         //DetectEventDiscipline searches for all categories listed within the event page.
-        HashMap<String, String> linksToParse = DetectEventDisciplines(url);
-
+        HashMap<String, String> linksToParse = DetectEventDisciplines(url, fullPath);
+        
+        //Process each category individually
         linksToParse.forEach((k, v) -> {
-            //Process each category individually
-
-            //First check path is legit, if the path to save contains any type of slashes at the end, remove.
-            //This path is the raw save path only, does not include file name.
-            String fullPath = "";
-
-            if(filePath.equals("")){
-                fullPath = eventCode;
-            }
-            else if(filePath.lastIndexOf("/") == filePath.length() - 1 || filePath.lastIndexOf("\\") == filePath.length() - 1){
-                fullPath =  filePath + eventCode;
-            }
-            else{
-                fullPath = filePath + "/" + eventCode;
-            }
-
+            
             if(k.contains("Qualification")){
                 //If the event is a qualification, call the appropriate processor
                 System.out.println(k);
@@ -166,7 +166,7 @@ public class IanseoParse {
         });
     }
 
-    public static HashMap<String, String> DetectEventDisciplines(String url){
+    public static HashMap<String, String> DetectEventDisciplines(String url, String fullPath){
         //This function finds all the categories available in provided event
         //Note: Junior only rounds currently not implemented (There sre so many!!)
 
@@ -178,6 +178,25 @@ public class IanseoParse {
         try{
 
             Document doc = Jsoup.connect(url).get();
+            
+            //print the event name
+            String eventDetail = new String();
+            Elements eventDivTag = doc.getElementsByClass("results-header-center");
+            eventDivTag = eventDivTag.first().children();
+            Iterator<Element> iterator = eventDivTag.iterator();
+            while (iterator.hasNext()) {
+                Element element = iterator.next();
+                eventDetail += element.text();
+                eventDetail += "\n";
+            }
+            try {
+                FileWriter fileWriter = new FileWriter(fullPath + "/event.txt");
+                fileWriter.write(eventDetail);
+                fileWriter.flush();
+                fileWriter.close();
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
 
             //Search HTML for all links
             Elements linkTags = doc.getElementsByTag("a");
@@ -341,8 +360,8 @@ public class IanseoParse {
                 headers[2] = "Country";
                 if (!isFinal) {
                     headers[3] = "Score";
-                    headers[4] = "10 + X";
-                    headers[5] = "X Only";
+                    headers[4] = "Tens";
+                    headers[5] = "Xs";
                 }
                 csvRows.add(headers);
             }
