@@ -111,7 +111,7 @@ public class IanseoParse {
         //Extract event code from event URL
         String eventCode = url.split("=")[1];
         System.out.println("Procesing event " + eventCode);
-        
+
         //First check path is legit, if the path to save contains any type of slashes at the end, remove.
         if(filePath.equals("")){
             filePath = eventCode;
@@ -124,14 +124,14 @@ public class IanseoParse {
         }
         //This path is the raw save path only, does not include file name.
         final String fullPath = filePath;
-        
+
         //Hashmap to store all qualification and bracket categories inside current event
         //DetectEventDiscipline searches for all categories listed within the event page.
         HashMap<String, String> linksToParse = DetectEventDisciplines(url, fullPath);
-        
+
         //Process each category individually
         linksToParse.forEach((k, v) -> {
-            
+
             if(k.contains("Qualification")){
                 //If the event is a qualification, call the appropriate processor
                 System.out.println(k);
@@ -178,7 +178,7 @@ public class IanseoParse {
         try{
 
             Document doc = Jsoup.connect(url).get();
-            
+
             //print the event name
             String eventDetail = new String();
             Elements eventDivTag = doc.getElementsByClass("results-header-center");
@@ -190,6 +190,8 @@ public class IanseoParse {
                 eventDetail += "\n";
             }
             try {
+                File dir = new File(fullPath);
+                dir.mkdirs();
                 FileWriter fileWriter = new FileWriter(fullPath + "/event.txt");
                 fileWriter.write(eventDetail);
                 fileWriter.flush();
@@ -547,5 +549,3 @@ public class IanseoParse {
     }
 
 }
-
-
