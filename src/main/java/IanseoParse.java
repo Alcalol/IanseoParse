@@ -172,8 +172,73 @@ public class IanseoParse {
 
         //Hashmap listing all possible rounds that are currently supported
         HashMap<String, String> output = new HashMap<>();
-        String[] disciplinesArray = {"IC.php", "IQRM.php", "IQRW.php", "IQCM.php", "IQCW.php", "IQBM.php", "IQBW.php", "IQLM.php", "LQLW.php", "IBRM.php", "IBRW.php", "IBCM.php", "IBCW.php", "IBBM.php", "IBBW.php", "IBLM.php", "IBLW.php", "TQRM.php", "TQRW.php", "TQCM.php", "TQCW.php", "TQBM.php", "TQBW.php", "TQLM.php", "TQLW.php", "TBRM.php", "TBRW.php", "TBCM.php", "TBCW.php", "TBBM.php", "TBBW.php", "TBLM.php", "TBLW.php",
-            "IFRM.php", "IFRW.php", "IFCM.php", "IFCW.php","IFBM.php", "IFBW.php", "IFLM.php", "IFLW.php"};
+        String[] disciplinesArray = {
+          "IC.php",
+          "IQRM.php",
+          "IQRW.php",
+          "IQCM.php",
+          "IQCW.php",
+          "IQBM.php",
+          "IQBW.php",
+          "IQLM.php",
+          "LQLW.php",
+          "IBRM.php",
+          "IBRW.php",
+          "IBCM.php",
+          "IBCW.php",
+          "IBBM.php",
+          "IBBW.php",
+          "IBLM.php",
+          "IBLW.php",
+          "TQRM.php",
+          "TQRW.php",
+          "TQCM.php",
+          "TQCW.php",
+          "TQBM.php",
+          "TQBW.php",
+          "TQLM.php",
+          "TQLW.php",
+          "TBRM.php",
+          "TBRW.php",
+          "TBCM.php",
+          "TBCW.php",
+          "TBBM.php",
+          "TBBW.php",
+          "TBLM.php",
+          "TBLW.php",
+          "IFRM.php",
+          "IFRW.php",
+          "IFCM.php",
+          "IFCW.php",
+          "IFBM.php",
+          "IFBW.php",
+          "IFLM.php",
+          "IFLW.php",
+          "IFERM.php", //bucs students experienced
+          "IFERW.php",
+          "IFECM.php",
+          "IFECW.php",
+          "IBERM.php", //bucs students experienced
+          "IBERW.php",
+          "IBECM.php",
+          "IBECW.php",
+          "IQERM.php", //bucs students experienced
+          "IQERW.php",
+          "IQECM.php",
+          "IQECW.php",
+          "IFRM2.php", //some organisers use suffix 2 to add more info
+          "IFRW2.php",
+          "IFCM2.php",
+          "IFCW2.php",
+          "IBRM2.php", //some organisers use suffix 2 to add more info
+          "IBRW2.php",
+          "IBCM2.php",
+          "IBCW2.php",
+          "IQRM2.php", //some organisers use suffix 2 to add more info
+          "IQRW2.php",
+          "IQCM2.php",
+          "IQCW2.php"
+        };
 
         try{
 
@@ -293,11 +358,18 @@ public class IanseoParse {
             Document doc = Jsoup.connect(url).get();
 
             //Extract Accordion object
+            //older ianoseo pages uses the accordion id the latest ones do not, therefore there are
+            //two versions of processQualification
             Element accordion = doc.getElementById("Accordion");
-
-            //Processor is shared with Round only because format is the same
-            ProcessQualificationAccordion(filePath, fileName, accordion.getElementsByClass("accordion").first(),writeHeaders, isFinal);
-
+            if (accordion != null) {
+              //Processor is shared with Round only because format is the same
+              ProcessQualificationAccordion(filePath, fileName,
+                  accordion.getElementsByClass("accordion").first(),writeHeaders, isFinal);
+            } else {
+              //extract qualification using tbody
+              accordion = doc.getElementsByTag("tbody").get(0);
+              ProcessQualificationTbody(filePath, fileName, accordion, writeHeaders, isFinal);
+            }
         }
         catch (IOException ex){
             System.out.println("Error writing " + filePath + " to disk.");
@@ -305,6 +377,7 @@ public class IanseoParse {
         }
     }
 
+    /**Procedure ParseAndSaveRoundOnly has not been fixed, and NEEDS TO BE REPAIRED if to be used*/
     public static void ParseAndSaveRoundOnly(String filePath, String eventCode, String url, boolean writeHeaders){
         try{
             String fileName = "";
@@ -387,15 +460,83 @@ public class IanseoParse {
             WriteToCsv(filePath, fileName, csvRows);
     }
 
+
+    public static void ProcessQualificationTbody(String filePath, String fileName, Element tbody, boolean writeHeaders, boolean isFinal){
+
+            //Inner accordion structure is the same for both Qualification AND Round Only types
+
+            //Extract rows within table.
+            Elements competitors = tbody.getElementsByTag("tr");
+
+            ArrayList<String[]> csvRows = new ArrayList<>();
+
+            int nColumnCsv; //number of columns of the output csv
+            int nColumnTr; //number of columns in the rows we are interested in
+            //final result print rank name country
+            //otherwise, also print score, 10+X and X
+            if (isFinal) {
+              nColumnCsv = 3; //(name, country, rank)
+              nColumnTr = 5; //ianseo has two blank columns
+            } else {
+              nColumnCsv = 6; //(name, country, rank, score, 10+X, X)
+              nColumnTr = 8; //(name, country, rank, distance 1, distance 2, score, 10+X, X)
+            }
+            //print header for csv
+            if(writeHeaders){
+                String[] headers = new String[nColumnCsv];
+                headers[0] = "Rank";
+                headers[1] = "Name";
+                headers[2] = "Country";
+                if (!isFinal) {
+                    headers[3] = "Score";
+                    headers[4] = "Tens";
+                    headers[5] = "Xs";
+                }
+                csvRows.add(headers);
+            }
+
+            for (int i=0; i<competitors.size(); i++) {
+                //Cycle through per class extracting wanted information
+                String [] row = new String[nColumnCsv];
+                Element competitorRow = competitors.get(i);
+                Elements competitorInfo = competitorRow.getElementsByTag("td");
+                //useful information only occur on rows with 8 columns
+                if (competitorInfo.size() == nColumnTr) {
+                  row[0] = competitorInfo.get(0).text();
+                  row[1] = competitorInfo.get(1).text();
+                  row[2] = competitorInfo.get(2).text();
+                  if (!isFinal) {
+                    row[3] = competitorInfo.get(5).text();
+                    row[4] = competitorInfo.get(6).text();
+                    row[5] = competitorInfo.get(7).text();
+                  }
+                  //Add collected row to list
+                  csvRows.add(row);
+                }
+            }
+
+            //Write completed CSV row list to file
+            WriteToCsv(filePath, fileName, csvRows);
+    }
+
     public static void ParseAndSaveIndividualBrackets(String filePath, String fileName, String url, boolean writeHeaders){
         try{
             Document doc = Jsoup.connect(url).get();
 
-            //First extract accordion, then extract Griglia table
+            //older versions of ianseo has accordion id and class griglia
+            //newer versions of ianseo has a single tbody for the brackets
+            
+            //First extract accordion, then extract Griglia table, the newer version will return a
+            //null
             Element accordion = doc.getElementById("Accordion");
-            Element wholeTable = accordion.getElementsByClass("Griglia").first();
+            Element wholeTable;
+            if (accordion != null) {
+              //Extract table rows inside Griglia
+              wholeTable = accordion.getElementsByClass("Griglia").first();
+            } else {
+              wholeTable = doc.getElementsByTag("tbody").first();
+            }
 
-            //Extract table rows inside Griglia
             Elements resultRows = wholeTable.getElementsByTag("tr");
 
             //Extract header data from first row to acquire pass names
