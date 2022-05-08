@@ -525,7 +525,7 @@ public class IanseoParse {
 
             //older versions of ianseo has accordion id and class griglia
             //newer versions of ianseo has a single tbody for the brackets
-            
+
             //First extract accordion, then extract Griglia table, the newer version will return a
             //null
             Element accordion = doc.getElementById("Accordion");
@@ -536,6 +536,8 @@ public class IanseoParse {
             } else {
               wholeTable = doc.getElementsByTag("tbody").first();
             }
+
+            wholeTable.select(".table-set-points").remove();
 
             Elements resultRows = wholeTable.getElementsByTag("tr");
 
@@ -567,16 +569,17 @@ public class IanseoParse {
                     Elements currentRow = resultRows.get(i).getElementsByTag("td");
 
                     if(j == 0){
+
                         //If j ==0, info is first pass, skip byes and empty rows
                         if (!currentRow.get(1).text().equals("") && !currentRow.get(5).text().equals("Bye") && !currentRow.get(5).text().equals("")){
                             //Not blank, has player data
+
                             String[] tempCompetitor = {currentRow.get(1).text(), currentRow.get(5).text()};
 
                             //Store competitor in correct pass list
                             matchesStorage.get(j).add(tempCompetitor);
                         }
-                    }
-                    else{
+                    } else {
                         //All subsequent passes, with field column calcualted as below
                         int targetColumn = 7 + (5 * (j - 1)) + 2;
 
@@ -594,7 +597,6 @@ public class IanseoParse {
                                 matchesStorage.get(j).add(tempCompetitor);
                             }
                         }
-
                     }
                 }
             }
@@ -603,7 +605,7 @@ public class IanseoParse {
 
             //Cycle through each pass and write to CSV
 
-            if(writeHeaders){
+            if (writeHeaders){
                 String[] csvHeader = {"Pass", "A Name", "A Score", "A Win", "B Name", "B Score", "B Win"};
                 csvArray.add(csvHeader);
             }
@@ -630,16 +632,16 @@ public class IanseoParse {
                         int aWin = 0;
                         int bWin = 0;
 
-                        //Detect stars in score box to determin winner for matches with shoot-off
-                        if(matchesStorage.get(i).get(j)[1].contains("*")){
+                        //Detect stars or + in score box to determin winner for matches with shoot-off
+                        String aScoreString = matchesStorage.get(i).get(j)[1];
+                        String bScoreString = matchesStorage.get(i).get(j + 1)[1];
+                        if (aScoreString.contains("*") || aScoreString.contains("+")) {
                             aWin = 1;
-                        }
-                        else if(matchesStorage.get(i).get(j + 1)[1].contains("*")){
+                        } else if (bScoreString.contains("*") || bScoreString.contains("+")) {
                             bWin = 1;
-                        }
-                        else{
-                            int aScore = Integer.parseInt(matchesStorage.get(i).get(j)[1]);
-                            int bScore = Integer.parseInt(matchesStorage.get(i).get(j + 1)[1]);
+                        } else{
+                            int aScore = Integer.parseInt(aScoreString);
+                            int bScore = Integer.parseInt(bScoreString);
 
                             if(aScore > bScore){
                                 aWin = 1;
