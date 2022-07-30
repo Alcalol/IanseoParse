@@ -226,6 +226,24 @@ public class IanseoParse {
           "IQERW.php",
           "IQECM.php",
           "IQECW.php",
+          "IFREM.php", //bucs students experienced 2022
+          "IFREW.php",
+          "IFCEM.php",
+          "IFCEW.php",
+          "IFBEM.php",
+          "IFBEW.php",
+          "IBREM.php", //bucs students experienced 2022
+          "IBREW.php",
+          "IBCEM.php",
+          "IBCEW.php",
+          "IBBEM.php",
+          "IBBEW.php",
+          "IQREM.php", //bucs students experienced 2022
+          "IQREW.php",
+          "IQCEM.php",
+          "IQCEW.php",
+          "IQBEM.php",
+          "IQBEW.php",
           "IFRM2.php", //some organisers use suffix 2 to add more info
           "IFRW2.php",
           "IFCM2.php",
@@ -306,22 +324,22 @@ public class IanseoParse {
                         discipline = "All";
                     }
                     else{
-                        if(linkPath.contains("RM")){
+                        if(linkPath.contains("RM") || linkPath.contains("REM")){
                             discipline = "Recurve_Men";
                         }
-                        else if(linkPath.contains("RW")){
+                        else if(linkPath.contains("RW") || linkPath.contains("REW")){
                             discipline = "Recurve_Women";
                         }
-                        else if(linkPath.contains("CM")){
+                        else if(linkPath.contains("CM") || linkPath.contains("CEM")){
                             discipline = "Compound_Men";
                         }
-                        else if(linkPath.contains("CW")){
+                        else if(linkPath.contains("CW") || linkPath.contains("CEW")){
                             discipline = "Compound_Women";
                         }
-                        else if(linkPath.contains("BM")){
+                        else if(linkPath.contains("BM") || linkPath.contains("BEM")){
                             discipline = "Barebow_Men";
                         }
-                        else if(linkPath.contains("BW")){
+                        else if(linkPath.contains("BW") || linkPath.contains("BEW")){
                             discipline = "Barebow_Women";
                         }
                         else if(linkPath.contains("LM")){
