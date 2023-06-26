@@ -519,7 +519,9 @@ public class IanseoParse {
                 Element competitorRow = competitors.get(i);
                 Elements competitorInfo = competitorRow.getElementsByTag("td");
                 //useful information only occur on rows with 8 columns
-                if (competitorInfo.size() == nColumnTr) {
+                // add extra column if there is a coin toss
+                if (competitorInfo.size() == nColumnTr ||
+                    (!isFinal && (competitorInfo.size() == nColumnTr + 1))) {
                   row[0] = competitorInfo.get(0).text();
                   row[1] = competitorInfo.get(1).text();
                   row[2] = competitorInfo.get(2).text();
